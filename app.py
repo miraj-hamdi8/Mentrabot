@@ -1,26 +1,27 @@
+from flask import Flask, request, jsonify  
 import openai
-from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+app = Flask(__name__)  
 @app.route('/')
 def home():
     return "Mentrabot is running!"
 
-# Set your OpenAI API key
 openai.api_key = "your-api-key-here"
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.json.get("message")
+    data = request.get_json()
+    if not data or "message" not in data:
+        return jsonify({"error": "No message provided"}), 400  
+    
+    user_input = data["message"]
 
-    # Fix: Make request to OpenAI API
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # Choose the right model
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": user_input}]
     )
 
     return jsonify({"response": response["choices"][0]["message"]["content"]})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
+    app.run(host="0.0.0.0", port=10000) 
